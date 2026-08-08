@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Bookshop.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookshop.Data;
 
-public partial class BookshopDbContext : DbContext
+public partial class BookshopDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
 {
     public BookshopDbContext(DbContextOptions<BookshopDbContext> options)
         : base(options)
@@ -36,6 +38,7 @@ public partial class BookshopDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<AspNetRole>(entity =>
         {
             entity.HasIndex(e => e.NormalizedName, "RoleNameIndex")
