@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,8 +16,10 @@ public partial class Book
     [StringLength(300)]
     public string Title { get; set; } = null!;
 
+    public int AuthorId { get; set; }
+
     [StringLength(200)]
-    public string Author { get; set; } = null!;
+    public string? Slug { get; set; }
 
     [Column("ISBN")]
     [StringLength(50)]
@@ -26,14 +28,27 @@ public partial class Book
     public string? Description { get; set; }
 
     [Column(TypeName = "decimal(18, 2)")]
+    public decimal OriginalPrice { get; set; }
+
+    [Column(TypeName = "decimal(18, 2)")]
     public decimal Price { get; set; }
 
     public int StockQuantity { get; set; }
 
-    [StringLength(500)]
     public string? ImageUrl { get; set; }
 
     public int CategoryId { get; set; }
+
+    public DateOnly? PublishedDate { get; set; }
+
+    public int? PageCount { get; set; }
+
+    [StringLength(100)]
+    public string? Publisher { get; set; }
+
+    [StringLength(50)]
+    [Unicode(false)]
+    public string? Language { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? CreatedOn { get; set; }
@@ -54,13 +69,13 @@ public partial class Book
     public string? DeletedBy { get; set; }
 
     [JsonIgnore]
-    [InverseProperty("Book")]
-    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+    [ForeignKey("AuthorId")]
+    [InverseProperty("Books")]
+    public virtual Author Author { get; set; } = null!;
 
     [JsonIgnore]
-    [ForeignKey("CategoryId")]
-    [InverseProperty("Books")]
-    public virtual Category? Category { get; set; }
+    [InverseProperty("Book")]
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
     [JsonIgnore]
     [InverseProperty("Book")]
