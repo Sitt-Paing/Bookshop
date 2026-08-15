@@ -63,37 +63,141 @@ public class BookController(IRepositoryWrapper repo, BookshopDbContext context) 
     }
     
     [HttpPost]
-    [EndpointSummary("CreateBook")]
+    [EndpointSummary("Create Book")]
     public async Task<IActionResult> CreateBook([FromBody] Book model)
     {
-        Book data = new Book()
+        try
         {
-            Title = model.Title,
-            Author = model.Author,
-            Description = model.Description,
-            Price = model.Price,
-            CategoryId = model.CategoryId,
-            StockQuantity = model.StockQuantity,
-            ImageUrl = model.ImageUrl,
-            Isbn = model.Isbn,
-            CreatedOn = DateTime.Now
-        };
-        _repo.Books.Create(data);
+            Book data = new Book
+            {
+                Title = model.Title,
+                AuthorId = model.AuthorId,
+                Slug = model.Slug,
+                Description = model.Description,
+                OriginalPrice = model.OriginalPrice,
+                Price = model.Price,
+                CategoryId = model.CategoryId,
+                StockQuantity = model.StockQuantity,
+                ImageUrl = model.ImageUrl,
+                Isbn = model.Isbn,
+                PublishedDate = model.PublishedDate,
+                PageCount = model.PageCount,
+                Publisher = model.Publisher,
+                Language = model.Language,
+                CreatedOn = DateTime.Now
+            };
+            _repo.Books.Create(data);
+            return await _repo.SaveAsync()
+                ? Ok(new DefaultResponseModel
+                {
+                    Success = true,
+                    Statuscode = 200,
+                    Message = "Book created successfully",
+                    Data = data
+                })
+                : BadRequest(new DefaultResponseModel
+                {
+                    Success = false,
+                    Statuscode = 400,
+                    Message = "Failed to create book",
+                    Data = null
+                });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 500,
+                Message = ex.Message,
+                Data = null
+            });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [EndpointSummary("Update Book")]
+    public async Task<IActionResult> UpdateBookAsync(int id, [FromBody] Book model)
+    {
+        var existingBook = await _repo.Books.GetByIdAsync(id);
+        if (existingBook == null || existingBook.DeletedOn.HasValue)
+        {
+            return NotFound(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 404,
+                Message = "Book not found",
+                Data = null
+            });
+        }
+
+        existingBook.Title = model.Title;
+        existingBook.AuthorId = model.AuthorId;
+        existingBook.Slug = model.Slug;
+        existingBook.Description = model.Description;
+        existingBook.OriginalPrice = model.OriginalPrice;
+        existingBook.Price = model.Price;
+        existingBook.CategoryId = model.CategoryId;
+        existingBook.StockQuantity = model.StockQuantity;
+        existingBook.ImageUrl = model.ImageUrl;
+        existingBook.Isbn = model.Isbn;
+        existingBook.PublishedDate = model.PublishedDate;
+        existingBook.PageCount = model.PageCount;
+        existingBook.Publisher = model.Publisher;
+        existingBook.Language = model.Language;
+        existingBook.UpdatedOn = DateTime.Now;
+
+        _repo.Books.Update(existingBook);
         return await _repo.SaveAsync()
             ? Ok(new DefaultResponseModel
             {
                 Success = true,
                 Statuscode = 200,
-                Message = "Book created successfully",
-                Data = data
+                Message = "Book updated successfully",
+                Data = existingBook
             })
             : BadRequest(new DefaultResponseModel
             {
                 Success = false,
                 Statuscode = 400,
-                Message = "Failed to create book",
+                Message = "Failed to update book",
                 Data = null
-            }); 
+            });
+    }
+
+    [HttpDelete("{id}")]
+    [EndpointSummary("Delete Book (Soft Delete)")]
+    public async Task<IActionResult> DeleteBookAsync(int id)
+    {
+        var existingBook = await _repo.Books.GetByIdAsync(id);
+        if (existingBook == null || existingBook.DeletedOn.HasValue)
+        {
+            return NotFound(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 404,
+                Message = "Book not found",
+                Data = null
+            });
+        }
+
+        existingBook.DeletedOn = DateTime.Now;
+        _repo.Books.Update(existingBook);
+        return await _repo.SaveAsync()
+            ? Ok(new DefaultResponseModel
+            {
+                Success = true,
+                Statuscode = 200,
+                Message = "Book deleted successfully",
+                Data = null
+            })
+            : BadRequest(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 400,
+                Message = "Failed to delete book",
+                Data = null
+            });
     }
 
     [NonAction]
@@ -110,7 +214,7 @@ public class BookController(IRepositoryWrapper repo, BookshopDbContext context) 
         {
             string search = q.Trim().ToLower();
             query = query.Where(x => (x.Title != null && x.Title.ToLower().Contains(search))
-                                  || (x.Author != null && x.Author.ToLower().Contains(search))
+                                  //|| (x.Author != null && x.Author.ToLower().Contains(search))
                                   || (x.Isbn != null && x.Isbn.ToLower().Contains(search)));
         }
 
