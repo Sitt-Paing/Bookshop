@@ -90,4 +90,76 @@ public class CategoryController(IRepositoryWrapper repo) : ControllerBase
             }); 
         }
     }
+
+
+    [HttpPut("{id}")]
+    [EndpointSummary("Update Category")]
+    public async Task<IActionResult> UpdateCategoryAsync(int Id,Category category)
+    {
+        var existingCategory = await _repo.Categories.GetByIdAsync(Id);
+        if (existingCategory == null)
+        {
+            return NotFound(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 404,
+                Message = "Category not found",
+                Data = null
+            });
+        }
+        existingCategory.Name = category.Name;
+        existingCategory.Description = category.Description;
+        existingCategory.UpdatedOn = DateTime.Now;
+        _repo.Categories.Update(existingCategory);
+        return await _repo.SaveAsync()
+            ? Ok(new DefaultResponseModel
+            {
+                Success = true,
+                Statuscode = 200,
+                Message = "Category updated successfully",
+                Data = existingCategory
+            })
+            : BadRequest(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 400,
+                Message = "Failed to update category",
+                Data = null
+            });
+    }
+
+    [HttpDelete("{id}")]
+    [EndpointSummary("Delete Category (Soft Delete)")]
+    public async Task<IActionResult> DeleteCategoryAsync(int id)
+    {
+        var existingCategory = await _repo.Categories.GetByIdAsync(id);
+        if (existingCategory == null || existingCategory.DeletedOn.HasValue)
+        {
+            return NotFound(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 404,
+                Message = "Category not found",
+                Data = null
+            });
+        }
+
+        existingCategory.DeletedOn = DateTime.Now;
+        _repo.Categories.Update(existingCategory);
+        return await _repo.SaveAsync()
+            ? Ok(new DefaultResponseModel
+            {
+                Success = true,
+                Statuscode = 200,
+                Message = "Category deleted successfully",
+                Data = null
+            })
+            : BadRequest(new DefaultResponseModel
+            {
+                Success = false,
+                Statuscode = 400,
+                Message = "Failed to delete category",
+                Data = null
+            });
+    }
 }
