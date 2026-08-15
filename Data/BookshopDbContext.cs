@@ -1,13 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Bookshop.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookshop.Data;
 
-public partial class BookshopDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+public partial class BookshopDbContext : DbContext
 {
     public BookshopDbContext(DbContextOptions<BookshopDbContext> options)
         : base(options)
@@ -24,9 +22,15 @@ public partial class BookshopDbContext : IdentityDbContext<IdentityUser, Identit
 
     public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; }
 
+    public virtual DbSet<AspNetUserRole> AspNetUserRoles { get; set; }
+
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; }
 
+    public virtual DbSet<Author> Authors { get; set; }
+
     public virtual DbSet<Book> Books { get; set; }
+
+    public virtual DbSet<Cart> Carts { get; set; }
 
     public virtual DbSet<CartItem> CartItems { get; set; }
 
@@ -36,9 +40,10 @@ public partial class BookshopDbContext : IdentityDbContext<IdentityUser, Identit
 
     public virtual DbSet<OrderItem> OrderItems { get; set; }
 
+    public virtual DbSet<Payment> Payments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<AspNetRole>(entity =>
         {
             entity.HasIndex(e => e.NormalizedName, "RoleNameIndex")
@@ -52,26 +57,28 @@ public partial class BookshopDbContext : IdentityDbContext<IdentityUser, Identit
                 .IsUnique()
                 .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
-            entity.HasMany(d => d.Roles).WithMany(p => p.Users)
-                .UsingEntity<Dictionary<string, object>>(
-                    "AspNetUserRole",
-                    r => r.HasOne<AspNetRole>().WithMany().HasForeignKey("RoleId"),
-                    l => l.HasOne<AspNetUser>().WithMany().HasForeignKey("UserId"),
-                    j =>
-                    {
-                        j.HasKey("UserId", "RoleId");
-                        j.ToTable("AspNetUserRoles");
-                        j.HasIndex(new[] { "RoleId" }, "IX_AspNetUserRoles_RoleId");
-                    });
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<Author>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Book>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_Books");
 
-            entity.HasOne(d => d.Category).WithMany(p => p.Books)
+            entity.HasOne(d => d.Author).WithMany(p => p.Books)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Book_Category");
+                .HasConstraintName("FK_Book_Author");
+        });
+
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.User).WithMany(p => p.Carts).HasConstraintName("FK_Cart_AspNetUsers");
         });
 
         modelBuilder.Entity<CartItem>(entity =>
@@ -80,24 +87,19 @@ public partial class BookshopDbContext : IdentityDbContext<IdentityUser, Identit
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CartItems_Book");
 
-            entity.HasOne(d => d.User).WithMany(p => p.CartItems)
+            entity.HasOne(d => d.Cart).WithMany(p => p.CartItems)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CartItems_AspNetUsers");
+                .HasConstraintName("FK_CartItems_Cart");
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_Categories");
-            entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_OrderItems");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Orders)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrderItems_AspNetUsers");
+            entity.HasOne(d => d.User).WithMany(p => p.Orders).HasConstraintName("FK_Order_AspNetUsers");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -108,7 +110,14 @@ public partial class BookshopDbContext : IdentityDbContext<IdentityUser, Identit
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderItems)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrderItem_Orders");
+                .HasConstraintName("FK_OrderItem_Order");
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasOne(d => d.Order).WithMany(p => p.Payments)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Payment_Order");
         });
 
         OnModelCreatingPartial(modelBuilder);
