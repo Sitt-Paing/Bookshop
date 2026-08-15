@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,14 +13,21 @@ public partial class OrderItem
     [Key]
     public int Id { get; set; }
 
-    public int OrderId { get; set; }
+    [StringLength(50)]
+    public string OrderId { get; set; } = null!;
 
     public int BookId { get; set; }
+
+    [StringLength(500)]
+    public string BookTitle { get; set; } = null!;
 
     public int Quantity { get; set; }
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal UnitPrice { get; set; }
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal TotalPrice { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? CreatedOn { get; set; }
