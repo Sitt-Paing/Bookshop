@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,8 +12,7 @@ public partial class CartItem
     [Key]
     public int Id { get; set; }
 
-    [StringLength(450)]
-    public string UserId { get; set; } = null!;
+    public int CartId { get; set; }
 
     public int BookId { get; set; }
 
@@ -43,7 +42,7 @@ public partial class CartItem
     public virtual Book Book { get; set; } = null!;
 
     [JsonIgnore]
-    [ForeignKey("UserId")]
+    [ForeignKey("CartId")]
     [InverseProperty("CartItems")]
-    public virtual AspNetUser User { get; set; } = null!;
+    public virtual Cart Cart { get; set; } = null!;
 }
