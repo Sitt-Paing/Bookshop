@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,7 +19,6 @@ public partial class AspNetRoleClaim
 
     public string? ClaimValue { get; set; }
 
-    
     [JsonIgnore]
     [ForeignKey("RoleId")]
     [InverseProperty("AspNetRoleClaims")]
