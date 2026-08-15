@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,22 +7,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bookshop.Entities;
 
-[PrimaryKey("UserId", "LoginProvider", "Name")]
+[Keyless]
 public partial class AspNetUserToken
 {
-    [Key]
-    public string UserId { get; set; } = null!;
+    public int UserId { get; set; }
 
-    [Key]
+    [StringLength(450)]
     public string LoginProvider { get; set; } = null!;
 
-    [Key]
+    [StringLength(450)]
     public string Name { get; set; } = null!;
 
     public string? Value { get; set; }
 
     [JsonIgnore]
     [ForeignKey("UserId")]
-    [InverseProperty("AspNetUserTokens")]
     public virtual AspNetUser User { get; set; } = null!;
 }
