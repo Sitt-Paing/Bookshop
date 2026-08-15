@@ -22,6 +22,15 @@ public class RepositoryWrapper(
     private readonly IHttpContextAccessor _accessor = accessor ?? throw new Exception("Http Context is null");
     private readonly IConfiguration _configuration = configuration ?? throw new Exception("Configuration is null");
 
+    public IAuthorRepo Authors
+    {
+        get
+        {
+            field ??= new AuthorRepo(context);
+            return field;
+        }
+    }
+
     public IBookRepo Books
     {
         get
@@ -31,11 +40,56 @@ public class RepositoryWrapper(
         }
     }
 
+    public ICartRepo Carts
+    {
+        get
+        {
+            field ??= new CartRepo(context);
+            return field;
+        }
+    }
+
+    public ICartItemRepo CartItems
+    {
+        get
+        {
+            field ??= new CartItemRepo(context);
+            return field;
+        }
+    }
+
     public ICategoryRepo Categories
     {
         get
         {
             field ??= new CategoryRepo(context);
+            return field;
+        }
+    }
+
+    public IOrderRepo Orders
+    {
+        get
+        {
+            field ??= new OrderRepo(context);
+            return field;
+        }
+    }
+
+    public IOrderItemRepo OrderItems
+    {
+        get
+        {
+            field ??= new OrderItemRepo(context);
+            return field;
+        }
+    }
+
+    public IPaymentRepo Payments
+    {
+        get
+        {
+            field ??= new PaymentRepo(context);
             return field;
         }
     }
