@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,7 +11,7 @@ namespace Bookshop.Entities;
 public partial class AspNetUser
 {
     [Key]
-    public string Id { get; set; } = null!;
+    public int Id { get; set; }
 
     [StringLength(256)]
     public string? UserName { get; set; }
@@ -33,6 +33,7 @@ public partial class AspNetUser
 
     public string? ConcurrencyStamp { get; set; }
 
+    [StringLength(50)]
     public string? PhoneNumber { get; set; }
 
     public bool PhoneNumberConfirmed { get; set; }
@@ -45,7 +46,6 @@ public partial class AspNetUser
 
     public int AccessFailedCount { get; set; }
 
-    
     [JsonIgnore]
     [InverseProperty("User")]
     public virtual ICollection<AspNetUserClaim> AspNetUserClaims { get; set; } = new List<AspNetUserClaim>();
@@ -56,18 +56,9 @@ public partial class AspNetUser
 
     [JsonIgnore]
     [InverseProperty("User")]
-    public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; } = new List<AspNetUserToken>();
-
-    [JsonIgnore]
-    [InverseProperty("User")]
-    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
     [JsonIgnore]
     [InverseProperty("User")]
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-
-    [JsonIgnore]
-    [ForeignKey("UserId")]
-    [InverseProperty("Users")]
-    public virtual ICollection<AspNetRole> Roles { get; set; } = new List<AspNetRole>();
 }
